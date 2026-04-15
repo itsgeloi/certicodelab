@@ -1,9 +1,12 @@
 import React, { useState } from 'react'; 
 import { Mail, Lock, Eye, Fingerprint, Code, User } from 'lucide-react';
 
+
 const Login = () => {
  
   const [activeTab, setActiveTab] = useState('login');
+  
+  
 
   const theme = {
     bg: 'linear-gradient(135deg, #3d4653 0%, #2d343f 100%)',
@@ -13,7 +16,7 @@ const Login = () => {
     blue: '#3b82f6',
     textGray: '#a0a8b4'
   };
-
+     
   const tabStyle = (type) => ({
     flex: 1,
     padding: '10px',
