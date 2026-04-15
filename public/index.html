@@ -1,123 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login UI</title>
-
+<meta charset="UTF-8" />
+<title>Certicode Labs</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .container {
-    width: 350px;
-    background: rgba(255,255,255,0.05);
-    padding: 30px;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    color: white;
-    text-align: center;
-  }
-
-  h2 {
-    margin-bottom: 10px;
-  }
-
-  .tabs {
-    display: flex;
-    margin-bottom: 20px;
-  }
-
-  .tabs button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    background: #334155;
-    color: white;
-    border-radius: 8px;
-  }
-
-  .tabs button.active {
-    background: linear-gradient(90deg, #06b6d4, #a855f7);
-  }
-
-  input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-  }
-
-  .login-btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #06b6d4, #a855f7);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-
-  .divider {
-    margin: 15px 0;
-    font-size: 12px;
-    opacity: 0.7;
-  }
-
-  .bio-btn {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-  }
-
-  .checkbox {
-    margin-top: 10px;
-    font-size: 12px;
-    text-align: left;
-  }
+body {
+  font-family: Arial;
+  background: #1e293b;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  width: 350px;
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 10px;
+}
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+}
+button {
+  background: linear-gradient(90deg, blue, purple);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.hidden { display: none; }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>CERTICODE LABS</h2>
-  <p>Welcome back, developer</p>
+<div class="container" id="authBox">
+  <h2 id="title">Login</h2>
 
-  <div class="tabs">
-    <button class="active">Login</button>
-    <button>Sign Up</button>
-  </div>
+  <input type="text" id="name" placeholder="Name (Sign up only)" class="hidden"/>
+  <input type="email" id="email" placeholder="Email"/>
+  <input type="password" id="password" placeholder="Password"/>
 
-  <input type="email" placeholder="your@email.com">
-  <input type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
 
-  <button class="login-btn">Login</button>
+  <hr>
+  <button onclick="biometricLogin()">Login with Biometric</button>
 
-  <div class="divider">OR</div>
-
-  <button class="bio-btn">Login with Biometric</button>
-
-  <div class="checkbox">
-    <input type="checkbox"> I agree with terms
-  </div>
+  <p onclick="toggle()">Switch Login/Signup</p>
 </div>
+
+<div class="container hidden" id="dashboard">
+  <h2>Dashboard</h2>
+  <p id="welcome"></p>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+let isLogin = true;
+
+function toggle() {
+  isLogin = !isLogin;
+  document.getElementById("title").innerText = isLogin ? "Login" : "Sign Up";
+  document.getElementById("name").classList.toggle("hidden");
+}
+
+async function signup() {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("http://localhost:3000/signup", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ name, email, password })
+  });
+
+  alert(await res.text());
+}
+
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("http://localhost:3000/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    showDashboard(data.user.name);
+  } else {
+    alert("Invalid login");
+  }
+}
+
+function showDashboard(name){
+  document.getElementById("authBox").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("welcome").innerText = "Welcome " + name;
+}
+
+function logout(){
+  location.reload();
+}
+
+// 🔐 Simple biometric simulation using WebAuthn
+async function biometricLogin() {
+  try {
+    await navigator.credentials.get({
+      publicKey: {
+        challenge: new Uint8Array(32),
+        timeout: 60000,
+        userVerification: "preferred"
+      }
+    });
+
+    alert("Biometric success!");
+    showDashboard("Biometric User");
+
+  } catch (err) {
+    alert("Biometric failed");
+  }
+}
+</script>
 
 </body>
 </html>
